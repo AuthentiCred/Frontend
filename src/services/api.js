@@ -3,14 +3,13 @@ import { API_NOTIFICATION_MESSAGES, SERVICE_URLS } from '../constants/config';
 import { getAccessToken, getType } from '../utils/common-utils';
 
 
-const API_URL = "";
+const API_URL = "http://localhost:3333";
 
 const axiosInstance = axios.create({
     baseURL: API_URL,
     headers: { 'content-type': 'application/json' },
     timeout: 10000
 })
-
 
 axiosInstance.interceptors.request.use(
     function (config) {
@@ -39,7 +38,7 @@ axiosInstance.interceptors.response.use(
 
 
 const processResponse = (response) => {
-    if (response?.status === 200) {
+    if (response?.status === 200 || response?.status === 201) {
         return { isSuccess: true, data: response.data }
     }
     else {

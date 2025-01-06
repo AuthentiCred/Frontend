@@ -25,6 +25,6 @@ export const API_NOTIFICATION_MESSAGES = {
 
 export const SERVICE_URLS = {
     // write the API methods and functions name here
-    // userSignup : {url : '/signup', method : 'POST'},
-    // loginUser : {url : '/login', method : 'POST'},
+    userSignup : {url : '/auth/signup', method : 'POST'},
+    loginUser : {url : '/auth/signin', method : 'POST'},
 }
