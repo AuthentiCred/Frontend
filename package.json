@@ -13,11 +13,14 @@
     "@heroicons/react": "^2.2.0",
     "@material-tailwind/react": "^2.1.10",
     "axios": "^1.7.9",
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.10.38",
     "prop-types": "^15.8.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.3.5",
-    "react-router-dom": "^7.1.1"
+    "react-router-dom": "^7.1.1",
+    "textract": "^2.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",

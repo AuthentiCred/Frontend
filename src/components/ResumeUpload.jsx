@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Card, Typography, Button } from "@material-tailwind/react";
+import textract from "textract";
 
 export function ResumeUpload() {
     const [resumes, setResumes] = useState([]);
@@ -31,11 +32,52 @@ export function ResumeUpload() {
     // Process files (only PDFs in this case)
     const processFiles = (files) => {
         const pdfFiles = files.filter((file) => file.type === "application/pdf");
-        const resumeList = pdfFiles.map((file) => ({
-            name: file.name,
-            url: URL.createObjectURL(file),
-        }));
-        setResumes((prevResumes) => [...prevResumes, ...resumeList]);
+        pdfFiles.forEach((file) => extractResumeData(file));
+    };
+
+    const extractResumeData = (file) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            textract.fromBufferWithMime("application/pdf", reader.result, (err, text) => {
+                if (err) {
+                    console.error(`Error extracting text from ${file.name}:`, err);
+                } else {
+                    const parsedData = parseText(text);
+                    setResumes((prevResumes) => {
+                        const updatedResumes = [
+                            ...prevResumes,
+                            {
+                                name: file.name,
+                                url: URL.createObjectURL(file),
+                                ...parsedData,
+                            },
+                        ];
+                        console.log("Updated Resumes JSON Array:", JSON.stringify(updatedResumes, null, 2));
+                        return updatedResumes;
+                    });
+                }
+            });
+        };
+        reader.readAsArrayBuffer(file);
+    };
+    
+
+    // Parse text to extract name, email, and phone
+    const parseText = (text) => {
+        const emailRegex = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/;
+        const phoneRegex = /(\+?\d{1,4}[-.\s]?|\(\d{1,4}\)\s?)?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}/;
+
+        const emailMatch = text.match(emailRegex);
+        const phoneMatch = text.match(phoneRegex);
+
+        const lines = text.split("\n").map((line) => line.trim()).filter(Boolean);
+        const name = lines.length > 0 ? lines[0] : "Unknown";
+
+        return {
+            extractedName: name,
+            extractedEmail: emailMatch ? emailMatch[0] : "Not found",
+            extractedPhone: phoneMatch ? phoneMatch[0] : "Not found",
+        };
     };
 
     return (
@@ -52,7 +94,6 @@ export function ResumeUpload() {
                             <input
                                 type="file"
                                 webkitdirectory="true"
-                                // directory="true"
                                 multiple
                                 onChange={handleFolderUpload}
                                 className="hidden"
@@ -66,8 +107,9 @@ export function ResumeUpload() {
 
                 {/* Drag-and-Drop Zone */}
                 <div
-                    className={`border-dashed border-2 p-10 rounded-md text-center ${dragging ? "border-blue-500 bg-blue-100" : "border-gray-300"
-                        }`}
+                    className={`border-dashed border-2 p-10 rounded-md text-center ${
+                        dragging ? "border-blue-500 bg-blue-100" : "border-gray-300"
+                    }`}
                     onDrop={handleDrop}
                     onDragOver={handleDragOver}
                     onDragLeave={handleDragLeave}
@@ -83,15 +125,25 @@ export function ResumeUpload() {
                         resumes.map((resume, index) => (
                             <div
                                 key={index}
-                                className="flex justify-between items-center p-2 border rounded-lg mb-2"
+                                className="flex flex-col border rounded-lg mb-4 p-4"
                             >
-                                <Typography>{resume.name}</Typography>
+                                <Typography variant="h6">{resume.name}</Typography>
+                                <Typography color="gray">
+                                    Name: {resume.extractedName}
+                                </Typography>
+                                <Typography color="gray">
+                                    Email: {resume.extractedEmail}
+                                </Typography>
+                                <Typography color="gray">
+                                    Phone: {resume.extractedPhone}
+                                </Typography>
                                 <Button
                                     variant="text"
                                     color="blue"
                                     onClick={() => window.open(resume.url, "_blank")}
+                                    className="mt-2"
                                 >
-                                    View
+                                    View Resume
                                 </Button>
                             </div>
                         ))

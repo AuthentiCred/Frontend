@@ -9,14 +9,21 @@ export default [
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
+      ecmaVersion: 'latest',
+      globals: {
+        ...globals.browser,
+        process: true, // Define 'process' explicitly
+      },
       parserOptions: {
-        ecmaVersion: 'latest',
         ecmaFeatures: { jsx: true },
         sourceType: 'module',
       },
+      env: {
+        browser: true,
+        node: true, // Include Node.js environment
+      },
     },
+
     settings: { react: { version: '18.3' } },
     plugins: {
       react,
