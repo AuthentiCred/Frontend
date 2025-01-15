@@ -5,6 +5,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import { Dashboard } from "./pages/Dashboard";
 import { Sidebar } from "./components/Sidebar";
+import CandidateForm from "./pages/CandidateForm";
+import CandidateProfile from "./pages/CandidateProfile";
+
 // PrivateRoute to restrict access based on authentication
 const PrivateRoute = ({ isAuthenticated }) => {
   if (isAuthenticated) {
@@ -38,10 +41,12 @@ function App() {
         {/* Public Routes */}
         <Route path="/signin" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/signup" element={<Register />} />
+        <Route path="/candidateform" element={<CandidateForm />} />
 
         {/* Protected Routes */}
         <Route path="/" element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
           <Route path="/" element={<Dashboard />} />
+          <Route path="/candidateprofile" element={<CandidateProfile />} />
         </Route>
       </Routes>
     </Router>
