@@ -39,6 +39,10 @@ const CandidateForm = () => {
     setEducations(updatedEducations);
   };
 
+  const handleSubmit = () => {
+    console.log("Form submitted", { previousEmployers, educations });
+  };
+
   return (
     <Card className="max-w-3xl mx-auto mt-10">
       <CardBody>
@@ -131,6 +135,13 @@ const CandidateForm = () => {
 
           <Button onClick={handleAddEducation} variant="gradient">
             Add Education
+          </Button>
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-center mt-6">
+          <Button onClick={handleSubmit} className="bg-black text-white">
+            Submit
           </Button>
         </div>
       </CardBody>
