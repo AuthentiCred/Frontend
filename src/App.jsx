@@ -7,6 +7,8 @@ import { Dashboard } from "./pages/Dashboard";
 import { Sidebar } from "./components/Sidebar";
 import CandidateForm from "./pages/CandidateForm";
 import CandidateProfile from "./pages/CandidateProfile";
+import AboutPage from "./pages/AboutPage";
+import ContactUs from "./pages/ContactUs"; // Add this import
 
 // PrivateRoute to restrict access based on authentication
 const PrivateRoute = ({ isAuthenticated }) => {
@@ -42,6 +44,8 @@ function App() {
         <Route path="/signin" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
         <Route path="/signup" element={<Register />} />
         <Route path="/candidateform" element={<CandidateForm />} />
+        <Route path="/aboutpage" element={<AboutPage />} />
+        <Route path="/contactus" element={<ContactUs />} />
 
         {/* Protected Routes */}
         <Route path="/" element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
