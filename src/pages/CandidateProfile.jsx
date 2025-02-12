@@ -1,214 +1,195 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
+import { User, GraduationCap, Briefcase, Mail, Phone, Calendar, CheckCircle2, XCircle } from 'lucide-react';
+import { api } from '../services/api';
+import { useParams } from 'react-router-dom';
+import { user } from '../constants/config';
+import { DataContext } from '../context/DataProvider';
 
-const CandidateProfile = () => {
-    const candidate = {
-        id: "#5",
-        name: "Ujwal Khairnar",
-        location: "Pune, India",
-        profilePic: "https://randomuser.me/api/portraits/men/4.jpg", // Dummy profile image link
-        email: "ukkvlogs@gmail.com",
-        phone: "594045984859",
-        languages: [
-            { code: "in", name: "Hindi" },
-            { code: "gb", name: "English" },
-            { code: "es", name: "Spanish" }
-        ],
-        socialLinks: [
-            { name: "Instagram", url: "https://www.instagram.com", className: "text-pink-500 hover:text-pink-600" },
-            { name: "LinkedIn", url: "https://www.linkedin.com", className: "text-blue-600 hover:text-blue-700" },
-            { name: "Twitter", url: "https://www.twitter.com", className: "text-blue-400 hover:text-blue-500" },
-            { name: "GitHub", url: "https://www.github.com", className: "text-gray-800 hover:text-gray-900" }
-        ],
-        badges: [
-            { title: "TOP LUXURY HIGH END", year: "2020-2023", color: "green" },
-            { title: "TOP 1%", year: "2023", color: "purple" },
-            { title: "TOP 10%", year: "2023", color: "pink" }
-        ],
-        stats: {
-            problems: 2,
-            offMarket: 105,
-            management: "Yes",
-            topCategory: "Rent",
-            feedback: "Honest"
-        },
-        experience: [
-            {
-                role: "Sr. Real Estate Agent",
-                company: "Agency X (Part Time)",
-                location: "Pune, India",
-                year: "2021",
-                description: "Specialized in luxury properties, managing both client expectations and market trends."
-            },
-            {
-                role: "Sales Agent",
-                company: "Agency X (Part Time)",
-                location: "Pune, India",
-                year: "2020",
-                description: "Handled customer inquiries, assisted in property tours, and closed multiple sales."
-            },
-            {
-                role: "Jr. Sales Agent",
-                company: "Agency X (Part Time)",
-                location: "Pune, India",
-                year: "2019",
-                description: "Supported senior agents with paperwork and customer service."
-            }
-        ]
+function CandidateProfile() {
+    const intialCandidate = {
+        firstName: '',
+        lastName: '',
+        email: '',
+        phone: '',
+        dateOfBirth: '',
+        educations: [],
+        previousEmployers: []
     };
 
+    const {account} = useContext(DataContext)
+
+    const { id } = useParams();
+    const [candidate, setCandidate] = useState(intialCandidate);
+
+    const VerificationStatus = ({ isVerified }) => (
+        <div className={`flex items-center gap-1 ${isVerified ? 'text-green-600' : 'text-red-500'}`}>
+            {isVerified ? (
+                <>
+                    <CheckCircle2 size={16} />
+                    <span className="text-sm font-medium">Verified</span>
+                </>
+            ) : (
+                <>
+                    <XCircle size={16} />
+                    <span className="text-sm font-medium">Not Verified</span>
+                </>
+            )}
+        </div>
+    );
+
+    const EmptyState = ({ title, message }) => (
+        <div className="p-6 bg-gray-50 rounded-lg text-center">
+            <p className="text-lg font-semibold text-gray-700 mb-2">{title}</p>
+            <p className="text-gray-600">{message}</p>
+        </div>
+    );
+
+    useEffect(() => {
+        const getCandidate = async () => {
+            const userId = account.id;
+            const url = `/users/${userId}/candidates/${id}`
+            const response = await api.get(url);
+            console.log(response.data);
+            setCandidate(response.data.data);
+        }
+
+        getCandidate();
+    }, [])
+
     return (
-        <div className="flex items-center justify-center min-h-screen p-6">
-            <div className="w-full max-w-4xl bg-white rounded-lg shadow-lg p-6">
-                {/* Header Section */}
-                <div className="flex justify-between items-start mb-8">
-                    <div className="flex items-start gap-6">
-                        <div className="relative">
-                            <img
-                                src={candidate.profilePic}
-                                alt="Profile"
-                                className="w-24 h-24 rounded-lg object-cover bg-gray-100"
-                            />
-                        </div>
-
-                        <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <h2 className="text-xl font-semibold">{candidate.id}</h2>
-                                <h1 className="text-2xl font-bold">{candidate.name}</h1>
-                            </div>
-
-                            <div className="flex items-center gap-4 text-gray-600 mb-4">
-                                <a
-                                    href={candidate.website}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-1 hover:text-purple-600"
-                                >
-                                    <span>🌐</span>
-                                    <span>Website</span>
-                                </a>
-                                <span className="flex items-center gap-1">
-                                    <span>📍</span>
-                                    <span>{candidate.location}</span>
-                                </span>
-                            </div>
-
-                            <div className="flex gap-2">
-                                {candidate.badges.map((badge, index) => (
-                                    <span
-                                        key={index}
-                                        className={`px-3 py-1 rounded-full text-xs font-medium
-                      ${badge.color === 'green' ? 'bg-green-100 text-green-800' :
-                                                badge.color === 'purple' ? 'bg-purple-100 text-purple-800' :
-                                                    'bg-pink-100 text-pink-800'}`}
-                                    >
-                                        {badge.title}
-                                    </span>
-                                ))}
+        <div className="h-full bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto">
+                <div className="bg-white shadow-xl rounded-lg overflow-hidden">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-gray-700 to-gray-900 px-8 py-10 text-white">
+                        <div className="flex items-center gap-4">
+                            <User size={48} className="text-white" />
+                            <div>
+                                <h1 className="text-3xl font-bold">{candidate.firstName} {candidate.lastName}</h1>
+                                <p className="text-gray-300">Professional Profile</p>
                             </div>
                         </div>
                     </div>
 
-                    <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
-                        Edit Profile
-                    </button>
-                </div>
-
-                {/* Contact Details and Stats */}
-                <div className="grid grid-cols-2 gap-8 mb-8">
-                    <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-4">CONTACT DETAILS</h3>
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <span>📧</span>
-                                <span>{candidate.email}</span>
+                    {/* Content */}
+                    <div className="p-8">
+                        {/* Personal Information */}
+                        <section className="mb-8">
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                                <User className="text-gray-700" />
+                                Personal Information
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="flex items-center gap-2">
+                                    <Mail className="text-gray-700" size={20} />
+                                    <div>
+                                        <div className="text-sm text-gray-600">Email</div>
+                                        <div className="text-gray-900">{candidate.email}</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Phone className="text-gray-700" size={20} />
+                                    <div>
+                                        <div className="text-sm text-gray-600">Phone</div>
+                                        <div className="text-gray-900">{candidate.mobile_number}</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Calendar className="text-gray-700" size={20} />
+                                    <div>
+                                        <div className="text-sm text-gray-600">Date of Birth</div>
+                                        <div className="text-gray-900">{new Date(candidate.dateOfBirth).toLocaleDateString()}</div>
+                                    </div>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span>📞</span>
-                                <span>{candidate.phone}</span>
-                            </div>
+                        </section>
 
-                            {/* Social Links */}
-                            <div className="flex items-center gap-4 mt-4">
-                                <h4 className="text-sm text-gray-500">SOCIAL LINKS</h4>
-                                <div className="flex gap-3">
-                                    {candidate.socialLinks.map((social, index) => (
-                                        <a
-                                            key={index}
-                                            href={social.url}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className={`${social.className} w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100`}
-                                        >
-                                            {social.name === "Instagram" && <span>📸</span>}
-                                            {social.name === "LinkedIn" && <span>💼</span>}
-                                            {social.name === "Twitter" && <span>🐦</span>}
-                                            {social.name === "GitHub" && <span>💻</span>}
-                                        </a>
+                        {/* Education */}
+                        <section className="mb-8">
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                                <GraduationCap className="text-gray-700" />
+                                Education
+                            </h2>
+                            {!candidate.educations ? (
+                                <EmptyState
+                                    title="No Education Information"
+                                    message="The candidate has not added any education details yet."
+                                />
+                            ) : (
+                                <div className="space-y-6">
+                                    {candidate.educations.map((edu, index) => (
+                                        <div key={index} className="p-6 bg-gray-50 rounded-lg">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h3 className="font-semibold text-lg text-gray-800">{edu.institution}</h3>
+                                                        <VerificationStatus isVerified={edu.isVerified} />
+                                                    </div>
+                                                    <p className="text-gray-700 mt-1">{edu.qualification}</p>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <p className="text-gray-700">
+                                                        <span className="font-medium">Contact:</span> {edu.contactPerson}
+                                                    </p>
+                                                    <p className="text-gray-700">
+                                                        <span className="font-medium">Email:</span> {edu.contactEmail}
+                                                    </p>
+                                                    <p className="text-gray-700">
+                                                        <span className="font-medium">Phone:</span> {edu.contactPhone}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
-                            </div>
+                            )}
+                        </section>
 
-                            {/* Languages */}
-                            <div className="flex items-center gap-4 mt-4">
-                                <h4 className="text-sm text-gray-500">LANGUAGES SPOKEN</h4>
-                                <div className="flex gap-2">
-                                    {candidate.languages.map((lang, index) => (
-                                        <span
-                                            key={index}
-                                            className="w-8 h-8 flex items-center justify-center bg-gray-100 rounded-full"
-                                            title={lang.name}
-                                        >
-                                            <img
-                                                src={`https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/flags/4x3/${lang.code}.svg`}
-                                                alt={lang.name}
-                                                className="w-6 h-6 rounded"
-                                            />
-                                        </span>
+                        {/* Employment History */}
+                        <section>
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
+                                <Briefcase className="text-gray-700" />
+                                Employment History
+                            </h2>
+                            {!candidate.previousEmployers ? (
+                                <EmptyState
+                                    title="No Employment History"
+                                    message="The candidate has not added any employment details yet."
+                                />
+                            ) : (
+                                <div className="space-y-6">
+                                    {candidate.previousEmployers.map((emp, index) => (
+                                        <div key={index} className="p-6 bg-gray-50 rounded-lg">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                <div>
+                                                    <div className="flex items-center justify-between mb-2">
+                                                        <h3 className="font-semibold text-lg text-gray-800">{emp.companyName}</h3>
+                                                        <VerificationStatus isVerified={emp.isVerified} />
+                                                    </div>
+                                                    <p className="text-gray-700 mt-1">{emp.position}</p>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <p className="text-gray-700">
+                                                        <span className="font-medium">Contact:</span> {emp.contactPerson}
+                                                    </p>
+                                                    <p className="text-gray-700">
+                                                        <span className="font-medium">Email:</span> {emp.contactEmail}
+                                                    </p>
+                                                    <p className="text-gray-700">
+                                                        <span className="font-medium">Phone:</span> {emp.contactPhone}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 className="text-sm font-medium text-gray-500 mb-4">AGENT STATS</h3>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="bg-purple-600 p-4 rounded-lg text-white">
-                                <div className="text-2xl font-bold">{candidate.stats.problems}</div>
-                                <div className="text-sm">PROBLEMS</div>
-                            </div>
-                            <div className="bg-purple-600 p-4 rounded-lg text-white">
-                                <div className="text-2xl font-bold">{candidate.stats.offMarket}</div>
-                                <div className="text-sm">OFF MARKET</div>
-                            </div>
-                            <div className="bg-purple-600 p-4 rounded-lg text-white">
-                                <div className="text-2xl font-bold">{candidate.stats.management}</div>
-                                <div className="text-sm">MANAGEMENT</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Experience */}
-                <div>
-                    <h3 className="text-sm font-medium text-gray-500 mb-4">EXPERIENCE</h3>
-                    <div className="space-y-6">
-                        {candidate.experience.map((exp, index) => (
-                            <div key={index} className="flex gap-4">
-                                <div className="w-20 text-sm text-gray-500">{exp.year}</div>
-                                <div>
-                                    <h4 className="font-medium">{exp.role}</h4>
-                                    <p className="text-sm text-gray-600">{exp.company}</p>
-                                    <p className="text-sm text-gray-500">{exp.location}</p>
-                                    <p className="text-sm text-gray-600">{exp.description}</p>
-                                </div>
-                            </div>
-                        ))}
+                            )}
+                        </section>
                     </div>
                 </div>
             </div>
         </div>
     );
-};
+}
 
 export default CandidateProfile;

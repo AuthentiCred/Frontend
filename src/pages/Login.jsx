@@ -1,23 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Typography, Button } from "@material-tailwind/react";
 import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { Link, useNavigate } from "react-router-dom";
-import { API } from "../services/api";
-import PropTypes from 'prop-types';  // Import PropTypes
+import { api } from "../services/api";
+import PropTypes from 'prop-types'; 
 
-// Define propTypes above the component definition
 Login.propTypes = {
     setIsAuthenticated: PropTypes.func.isRequired // Add prop type validation
 };
 
 export function Login({ setIsAuthenticated }) {
     const [passwordShown, setPasswordShown] = useState(false);
-    const [error, setError] = useState(""); 
-    
+    const [error, setError] = useState("");
+
     const [user, setUser] = useState({
         email: "",
         password: ""
     });
+
+    useEffect(() => {
+        const getUser = async () => {
+            const url = '/auth/user'
+            const response = await api.get(url);
+            
+            if(response.data.success){
+                setIsAuthenticated(true);
+                navigate('/');
+            }
+        }
+
+        getUser();
+    }, []);
 
     const navigate = useNavigate();
 
@@ -25,14 +38,14 @@ export function Login({ setIsAuthenticated }) {
 
     const loginUser = async () => {
         try {
-            let response = await API.loginUser(user);
-            console.log(response);
-            if (response.isSuccess) {
+            const url = '/auth/signin'
+            let response = await api.post(url, user);
+
+            if (response.data.success) {
                 setError('');
-                // Store the tokens in sessionStorage
-                sessionStorage.setItem("accessToken", `Bearer ${response.data.accessToken}`);
-                // Set authentication state
-                navigate('/'); // Redirect to home or dashboard
+                localStorage.clear();
+                localStorage.setItem("accessToken", response.data.access_token);
+                navigate('/');
                 setIsAuthenticated(true);
             } else {
                 setError("Something went wrong, please try again later");
@@ -135,7 +148,7 @@ export function Login({ setIsAuthenticated }) {
                             Forgot password
                         </Typography>
                     </div>
-                    
+
                     <Typography
                         variant="small"
                         color="gray"

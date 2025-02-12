@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Typography, Button } from "@material-tailwind/react";
 import { EyeSlashIcon, EyeIcon } from "@heroicons/react/24/solid";
 import { Link, useNavigate } from "react-router-dom";
-import { API } from "../services/api";
+import { api } from "../services/api";
 import PropTypes from 'prop-types';  // Import PropTypes
 
 // Define propTypes above the component definition
@@ -10,9 +10,23 @@ Register.propTypes = {
     setIsAuthenticated: PropTypes.func.isRequired,  // Add prop type validation
 };
 
-export function Register({setIsAuthenticated}) {
+export function Register({ setIsAuthenticated }) {
     const [passwordShown, setPasswordShown] = useState(false);
     const togglePasswordVisibility = () => setPasswordShown((cur) => !cur);
+
+    useEffect(() => {
+        const getUser = async () => {
+            const url = '/auth/user'
+            const response = await api.get(url);
+
+            if (response.data.success) {
+                setIsAuthenticated(true);
+                navigate('/');
+            }
+        }
+
+        getUser();
+    }, []);
 
     const [error, setError] = useState("");
     const [user, setUser] = useState({
@@ -28,15 +42,15 @@ export function Register({setIsAuthenticated}) {
     };
 
     const signupUser = async () => {
-        let response = await API.userSignup(user);
+        const url = '/auth/signup';
+
+        let response = await api.post(url, user);
         console.log(response);
-        if (response.isSuccess) {
-            console.log(response);
-            setError('');
-            // Save the access token in session storage
+        if (response.data.success) {
+            console.log("Successfully signed up!!");
+            localStorage.clear();
+            localStorage.setItem("accessToken", response.data.access_token);
             navigate('/');
-            setIsAuthenticated(true);
-            sessionStorage.setItem("accessToken", response.data.access_token);
         } else {
             setError("Something went wrong, please try again later");
         }

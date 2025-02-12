@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
     User,
     Mail,
@@ -9,15 +9,17 @@ import {
     Building,
     Send
 } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { api } from '../services/api';
 
 function UpdateCandidate() {
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
         email: '',
-        phone: '',
+        mobile_number: '',
         dateOfBirth: '',
-        education: [
+        educations: [
             {
                 institution: '',
                 qualification: '',
@@ -33,7 +35,7 @@ function UpdateCandidate() {
                 contactPhone: '',
             }
         ],
-        employers: [
+        previousEmployers: [
             {
                 companyName: '',
                 position: '',
@@ -51,6 +53,8 @@ function UpdateCandidate() {
         ]
     });
 
+    const {user_id, id } = useParams();
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -61,31 +65,96 @@ function UpdateCandidate() {
 
     const handleEducationChange = (index, field, value) => {
         setFormData(prev => {
-            const newEducation = [...prev.education];
+            const newEducation = [...prev.educations];
             newEducation[index] = { ...newEducation[index], [field]: value };
-            return { ...prev, education: newEducation };
+            return { ...prev, educations: newEducation };
         });
     };
 
     const handleEmployerChange = (index, field, value) => {
         setFormData(prev => {
-            const newEmployers = [...prev.employers];
+            const newEmployers = [...prev.previousEmployers];
             newEmployers[index] = { ...newEmployers[index], [field]: value };
-            return { ...prev, employers: newEmployers };
+            return { ...prev, previousEmployers: newEmployers };
         });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log('Form submitted:', formData);
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // Prevent the default form submission behavior
+
+        try {
+            const url = `users/${user_id}/candidates/${id}`;
+
+            // Check if dateOfBirth is valid
+            let formattedDate;
+            if (formData.dateOfBirth) {
+                const date = new Date(formData.dateOfBirth);
+                // Validate the date
+                if (isNaN(date.getTime())) {
+                    throw new Error('Invalid date format. Please enter a valid date.');
+                }
+                formattedDate = date.toISOString(); // Convert to ISO string for submission
+            } else {
+                throw new Error('Date of birth is required.'); // Handle empty date
+            }
+
+            console.log(formattedDate);
+
+            // Prepare submission data
+            const submissionData = {
+                ...formData,
+                dateOfBirth: formattedDate // Use the formatted date
+            };
+
+            // Make the API call to update the candidate
+            const response = await api.patch(url, submissionData);
+            if (response.data.success) {
+                alert('You have updated your information successfully');
+                // Optionally reset the form or redirect
+                // setFormData(initialState); // Reset form if needed
+            } else {
+                // Handle case where the API response indicates failure
+                alert('Failed to update candidate. Please check your input and try again.');
+            }
+        } catch (error) {
+            console.error('Error updating candidate:', error);
+            alert(`Failed to update candidate: ${error.message}`); // Provide specific error message
+        }
     };
+
+    useEffect(() => {
+        const getCandidate = async () => {
+            try {
+                const url = `users/${user_id}/candidates/${id}`;
+                const response = await api.get(url);
+                const data = response.data.data; // Get the data from the response
+
+                // Format date for input field
+                setFormData({
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email,
+                    mobile_number: data.mobile_number,
+                    educations: formData.educations,
+                    previousEmployers: formData.previousEmployers
+                });
+
+                console.log(formData);
+            } catch (error) {
+                console.error('Error fetching candidate:', error);
+                alert('Failed to fetch candidate data. Please try again later.');
+            }
+        };
+
+        getCandidate();
+    }, [id]); // Add id as a dependency
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
                 <div className="bg-white shadow-2xl rounded-2xl p-8">
                     <div className="text-center mb-8">
-                        <h1 className="text-4xl font-bold text-gray-900">Candidate Information Form</h1>
+                        <h1 className="text-4xl font-bold text-gray-900">Update Candidate Information</h1>
                         <div className="mt-2 text-xl font-semibold text-blue-600">by Authenticred</div>
                     </div>
 
@@ -145,10 +214,10 @@ function UpdateCandidate() {
                                     </div>
                                     <input
                                         type="tel"
-                                        name="phone"
-                                        value={formData.phone}
+                                        name="mobile_number"
+                                        value={formData.mobile_number}
                                         onChange={handleChange}
-                                        placeholder="Phone Number"
+                                        placeholder="Mobile Number"
                                         required
                                         className="pl-12 w-full py-3 bg-white rounded-lg border-0 ring-1 ring-gray-200 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
                                     />
@@ -173,7 +242,7 @@ function UpdateCandidate() {
                         {/* Education Details */}
                         <div className="bg-gray-50/50 p-8 rounded-xl">
                             <h2 className="text-xl font-semibold text-gray-900 mb-6">Education Details</h2>
-                            {[0, 1].map((index) => (
+                            {formData.educations.map((education, index) => (
                                 <div key={`education-${index}`} className="mb-8 last:mb-0">
                                     <h3 className="text-lg font-medium text-gray-700 mb-4">
                                         {index === 0 ? 'Most Recent Education' : 'Previous Education'}
@@ -185,7 +254,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="text"
-                                                value={formData.education[index].institution}
+                                                value={education.institution}
                                                 onChange={(e) => handleEducationChange(index, 'institution', e.target.value)}
                                                 placeholder="Institution Name"
                                                 required
@@ -195,7 +264,7 @@ function UpdateCandidate() {
                                         <div className="relative">
                                             <input
                                                 type="text"
-                                                value={formData.education[index].qualification}
+                                                value={education.qualification}
                                                 onChange={(e) => handleEducationChange(index, 'qualification', e.target.value)}
                                                 placeholder="Qualification"
                                                 required
@@ -208,7 +277,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="text"
-                                                value={formData.education[index].contactPerson}
+                                                value={education.contactPerson}
                                                 onChange={(e) => handleEducationChange(index, 'contactPerson', e.target.value)}
                                                 placeholder="Contact Person"
                                                 required
@@ -221,7 +290,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="email"
-                                                value={formData.education[index].contactEmail}
+                                                value={education.contactEmail}
                                                 onChange={(e) => handleEducationChange(index, 'contactEmail', e.target.value)}
                                                 placeholder="Contact Email"
                                                 required
@@ -234,7 +303,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="tel"
-                                                value={formData.education[index].contactPhone}
+                                                value={education.contactPhone}
                                                 onChange={(e) => handleEducationChange(index, 'contactPhone', e.target.value)}
                                                 placeholder="Contact Phone"
                                                 required
@@ -249,7 +318,7 @@ function UpdateCandidate() {
                         {/* Previous Employment */}
                         <div className="bg-gray-50/50 p-8 rounded-xl">
                             <h2 className="text-xl font-semibold text-gray-900 mb-6">Previous Employment</h2>
-                            {[0, 1].map((index) => (
+                            {formData.previousEmployers.map((employer, index) => (
                                 <div key={`employer-${index}`} className="mb-8 last:mb-0">
                                     <h3 className="text-lg font-medium text-gray-700 mb-4">
                                         {index === 0 ? 'Most Recent Employer' : 'Previous Employer'}
@@ -261,7 +330,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="text"
-                                                value={formData.employers[index].companyName}
+                                                value={employer.companyName}
                                                 onChange={(e) => handleEmployerChange(index, 'companyName', e.target.value)}
                                                 placeholder="Company Name"
                                                 required
@@ -274,7 +343,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="text"
-                                                value={formData.employers[index].position}
+                                                value={employer.position}
                                                 onChange={(e) => handleEmployerChange(index, 'position', e.target.value)}
                                                 placeholder="Position Held"
                                                 required
@@ -287,7 +356,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="text"
-                                                value={formData.employers[index].contactPerson}
+                                                value={employer.contactPerson}
                                                 onChange={(e) => handleEmployerChange(index, 'contactPerson', e.target.value)}
                                                 placeholder="Contact Person"
                                                 required
@@ -300,7 +369,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="email"
-                                                value={formData.employers[index].contactEmail}
+                                                value={employer.contactEmail}
                                                 onChange={(e) => handleEmployerChange(index, 'contactEmail', e.target.value)}
                                                 placeholder="Contact Email"
                                                 required
@@ -313,7 +382,7 @@ function UpdateCandidate() {
                                             </div>
                                             <input
                                                 type="tel"
-                                                value={formData.employers[index].contactPhone}
+                                                value={employer.contactPhone}
                                                 onChange={(e) => handleEmployerChange(index, 'contactPhone', e.target.value)}
                                                 placeholder="Contact Phone"
                                                 required
@@ -331,7 +400,7 @@ function UpdateCandidate() {
                                 className="inline-flex items-center px-8 py-4 border-0 text-base font-medium rounded-lg shadow-lg text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
                             >
                                 <Send className="h-5 w-5 mr-2" />
-                                Submit Information
+                                Update Candidate
                             </button>
                         </div>
                     </form>

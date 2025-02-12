@@ -1,30 +1,5 @@
-// API NOTIFICATION MESSAGES
-export const API_NOTIFICATION_MESSAGES = {
-    loading: {
-        title: "Loading...",
-        message: "Data is being loaded. Please wait"
-    },
-    success: {
-        title: "Success",
-        message: "Data successfully loaded"
-    },
-    requestFailure: {
-        title: "Error!",
-        message: "An error occur while parsing request data"
-    },
-    responseFailure: {
-        title: "Error!",
-        message: "An error occur while fetching response from server. Please try again"
-    },
-    networkError: {
-        title: "Error!",
-        message: "Unable to connect to the server. Please check internet connectivity and try again."
-    }
-}
-
-
-export const SERVICE_URLS = {
-    // write the API methods and functions name here
-    userSignup : {url : '/auth/signup', method : 'POST'},
-    loginUser : {url : '/auth/signin', method : 'POST'},
+export const user = {
+    name : sessionStorage.getItem('name'),
+    email: sessionStorage.getItem('email'),
+    id: sessionStorage.getItem('id'),
 }

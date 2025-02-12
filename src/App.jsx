@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import PropTypes from "prop-types";
 import Login from "./pages/Login";
@@ -6,7 +6,9 @@ import Register from "./pages/Register";
 import { Dashboard } from "./pages/Dashboard";
 import { Sidebar } from "./components/Sidebar";
 import CandidateProfile from "./pages/CandidateProfile";
-import UpdateCandidate from "./pages/UpdateCandidate"; // Import new update candidate component
+import UpdateCandidate from "./pages/UpdateCandidate";
+import Candidates from "./pages/Candidates";// Import new update candidate component
+import DataProvider from "./context/DataProvider";
 
 // PrivateRoute to restrict access based on authentication
 const PrivateRoute = ({ isAuthenticated }) => {
@@ -32,25 +34,27 @@ PrivateRoute.propTypes = {
 };
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/signin" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
-        <Route path="/signup" element={<Register />} />
-        <Route path="/update_candidate/:user_id/candidate/:candidate_id" element={<UpdateCandidate />} />
+    <DataProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/signin" element={<Login setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/signup" element={<Register />} />
+          <Route path="/update_candidate/:user_id/candidate/:id" element={<UpdateCandidate />} />
 
-
-        {/* Protected Routes */}
-        <Route path="/" element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/profile" element={<CandidateProfile />} />
-          {/* New Route for Updating Candidate */}
-        </Route>
-      </Routes>
-    </Router>
+          {/* Protected Routes */}
+          <Route path="/" element={<PrivateRoute isAuthenticated={isAuthenticated} />}>
+            <Route index element={<Dashboard />} /> {/* Use index for default route */}
+            <Route path="/profile" element={<CandidateProfile />} />
+            <Route path="/candidates" element={<Candidates />} />
+            <Route path="/candidates/:id" element={<CandidateProfile />} />
+          </Route>
+        </Routes>
+      </Router>
+    </DataProvider>
   );
 }
 
