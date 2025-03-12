@@ -28,14 +28,14 @@ export function Sidebar() {
     const [open, setOpen] = React.useState(0);
     const navigate = useNavigate();
 
-    const {account, setAccount} = useContext(DataContext);
+    const { account, setAccount } = useContext(DataContext);
 
     useEffect(() => {
         const getUser = async () => {
             const url = '/auth/user'
             const response = await api.get(url);
-            
-            if(response.data.success){
+
+            if (response.data.success) {
                 setAccount(response.data.user);
             }
         }
@@ -121,12 +121,14 @@ export function Sidebar() {
                     </ListItemPrefix>
                     Orders
                 </ListItem>
-                <ListItem className={LIST_ITEM_STYLES}>
-                    <ListItemPrefix>
-                        <UserGroupIcon className="h-5 w-5" />
-                    </ListItemPrefix>
-                    Customers
-                </ListItem>
+                <Link to='/about'>
+                    <ListItem className={LIST_ITEM_STYLES}>
+                        <ListItemPrefix>
+                            <UserGroupIcon className="h-5 w-5" />
+                        </ListItemPrefix>
+                        About us
+                    </ListItem>
+                </Link>
             </List>
             <hr className="my-2 border-gray-200" />
             <List>
