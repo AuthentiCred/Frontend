@@ -9,6 +9,7 @@ import CandidateProfile from "./pages/CandidateProfile";
 import UpdateCandidate from "./pages/UpdateCandidate";
 import Candidates from "./pages/Candidates";// Import new update candidate component
 import DataProvider from "./context/DataProvider";
+import About from './pages/About'
 
 // PrivateRoute to restrict access based on authentication
 const PrivateRoute = ({ isAuthenticated }) => {
@@ -51,6 +52,7 @@ function App() {
             <Route path="/profile" element={<CandidateProfile />} />
             <Route path="/candidates" element={<Candidates />} />
             <Route path="/candidates/:id" element={<CandidateProfile />} />
+            <Route path="/about" element={<About />} />
           </Route>
         </Routes>
       </Router>
